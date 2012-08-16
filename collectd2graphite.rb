@@ -1,7 +1,7 @@
 #! /usr/bin/env ruby
 
 require 'sinatra'
-#require 'pp'
+require 'pp'
 require 'json'
 require 'json2graphite'
 require 'yaml'
@@ -16,7 +16,7 @@ post '/post-collectd' do
   request.body.rewind  # in case someone already read it
   received = JSON.parse request.body.read
   received.each do |r|
-    #pp r
+    pp r
 
     # Values retrieved from the raw json
     time            = r["time"].to_i
@@ -38,9 +38,9 @@ post '/post-collectd' do
         typestring   = r["type"]
         pluginstring = r["plugin"]
       else
-        # Plugin_instance set while type_instance is not
-        typestring   = r["type"]
-        pluginstring = [r["plugin"],r["type_instance"]].join('-')
+        # Plugin_instance not set while type_instance is
+        typestring   = [r["type"],r["type_instance"]].join('-')
+        pluginstring = r["plugin"]
       end
     else
       if type_instance.empty?
@@ -49,17 +49,15 @@ post '/post-collectd' do
         pluginstring = [r["plugin"],r["plugin_instance"]].join('-')
       else
         # Both instance for plugin and type exist
-        typestring   = [r["type"],r["type_instance"]].join('-')
+        if r["type"] == r["plugin"]
+          typestring   = r["type_instance"]
+        else
+          typestring   = [r["type"],r["type_instance"]].join('-')
+        end
         pluginstring = [r["plugin"],r["plugin_instance"]].join('-')
       end
     end
     superstring = [pluginstring,typestring].join('.')
-
-    # Set the typestring for better target specification
-    #if type_instance.empty?
-    #else
-    #end
-
 
     # Create some empty hashes to work with
     data = Hash.new
@@ -71,7 +69,7 @@ post '/post-collectd' do
 
     # Fill in the hash
     values.each_index do |i|
-      if values.count > 1
+      if r["dsnames"].count > 1
         data[:agents][host][superstring][r["dsnames"][i]] = r["values"][i]
       else
         data[:agents][host][superstring] = r["values"][i]
@@ -80,7 +78,7 @@ post '/post-collectd' do
 
     # Convert the hash to graphite formatted data
     processed = Json2Graphite.get_graphite(data, time)
-    #puts processed
+    puts processed
     s = TCPSocket.open(settings.graphiteserver, settings.graphiteport)
     processed.each do |line|
       s.puts(line)
