@@ -13,7 +13,7 @@ module Collectd2Graphite
   # Returns an array of hashes formatted to your liking, but in a structure
   # that can be used with the jsonn2graphite library
 
-  def convert (array)
+  def raw_convert (array)
 
     # If we've not received an Array, something is broken.
     exit 127 unless array.is_a? Array
@@ -21,11 +21,13 @@ module Collectd2Graphite
     # Initialize the object that we will return
     data_array = Array.new
 
-
     # Process each hash in the array
     array.each do |r|
 
-      # Values retrieved from the raw json
+      # initialize that data object that will return
+      data = Hash.new
+
+      # Pull out the useful bits from the raw collectd hash that we have received
       time            = r["time"].to_i
       values          = r["values"]
       host            = r["host"].gsub('.', '_')
@@ -34,6 +36,9 @@ module Collectd2Graphite
       plugin          = r["plugin"]
       plugin_instance = r["plugin_instance"]
       pluginstring    = [r["plugin"], ["plugin_instance"]].join('-')
+
+      # Set the time the data was created
+      data[:time] = time
 
       # Set the pluginstring for better target specification
       #
@@ -71,16 +76,16 @@ module Collectd2Graphite
       # Here is the string that will actually be used in the output
       superstring = [pluginstring,typestring].join('.')
 
-
       # Create some empty hashes to work with
-      data = Hash.new
       data[:collectd] = Hash.new
       data[:collectd][host] = Hash.new
+
+      # if we are working with multiple values, we should handle specially
       if values.count > 1
         data[:collectd][host][superstring] = Hash.new
       end
 
-      # Fill in the hash
+      # Load the hash with actual data
       values.each_index do |i|
         if values.count > 1
           data[:collectd][host][superstring][r["dsnames"][i]] = r["values"][i]
@@ -89,7 +94,7 @@ module Collectd2Graphite
         end
       end
 
-      # Add our hash to the return object
+      # Add our hash to the method return object
       data_array << data
 
     end
