@@ -65,6 +65,28 @@ module Collectd2Graphite
       # when used with graphite should be identical.
       #
 
+      #plugindata = Hash.new
+      #puts 'r is:'
+      #pp r
+      #plugindata = ["type","type_instance","plugin", "plugin_instance"].inject({}) {|hash, element|
+      #  #next if r[element].empty?
+      #  #puts "what is in element: #{element}"
+      #  #puts "is r[element] empty?"
+      #  #puts r[element].empty?
+      #  #puts "element is: #{element}"
+      #  #puts "r[element] is #{r[element]}"
+      #  #hash[r[element]] = {} unless r[element].empty?
+      #  #puts "hash is now: "
+      #  #pp hash
+      #  #puts hash[r[element]]
+      #  #hash[r[element]] = r["#{element}"] unless r[element].empty?
+      #  hash = hash[r[element]] unless r[element].empty?
+      #  hash
+      #}
+
+      #pp plugindata
+
+
       if plugin_instance.empty?
         if type_instance.empty?
           # Neither plguin_instance nor type_instance exist
