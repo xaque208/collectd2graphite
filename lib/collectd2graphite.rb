@@ -5,6 +5,7 @@ require 'yaml'
 #require 'pp'
 
 # A module for converting collectd data into graphite data.
+#
 
 module Collectd2Graphite
   module_function
@@ -12,6 +13,20 @@ module Collectd2Graphite
   # Accepts an array of hashes formatted by the collectd write_http plugin
   # Returns an array of hashes formatted to your liking, but in a structure
   # that can be used with the jsonn2graphite library
+  #
+  # The format of the reeived data:
+  #
+  # [{
+  #   "values": [1.16497e+08,3.91247e+08],
+  #   "time":1288638055,
+  #   "interval":10,
+  #   "host":"collectd_restmq_server",
+  #   "plugin":"df",
+  #   "plugin_instance":"",
+  #   "type":"df",
+  #   "type_instance":"boot"}
+  # }]
+  #
 
   def raw_convert (array)
 
@@ -43,13 +58,34 @@ module Collectd2Graphite
       # Set the pluginstring for better target specification
       #
       # Collectd formats the data object in a manner that takes some munging to
-      # make sense of.  Plugins seem to format its data in different wats, so
-      # consistency is tough.  The munging below is an attempt to hammer the
-      # hash tree in a format that makes sense for your graphite installation.
+      # make sense of.  
       #
       # This process doesn't actually build a nested hash, which I think I
       # might prefer, but for now, it just formatts the string, so the result
       # when used with graphite should be identical.
+      #
+
+      #plugindata = Hash.new
+      #puts 'r is:'
+      #pp r
+      #plugindata = ["type","type_instance","plugin", "plugin_instance"].inject({}) {|hash, element|
+      #  #next if r[element].empty?
+      #  #puts "what is in element: #{element}"
+      #  #puts "is r[element] empty?"
+      #  #puts r[element].empty?
+      #  #puts "element is: #{element}"
+      #  #puts "r[element] is #{r[element]}"
+      #  #hash[r[element]] = {} unless r[element].empty?
+      #  #puts "hash is now: "
+      #  #pp hash
+      #  #puts hash[r[element]]
+      #  #hash[r[element]] = r["#{element}"] unless r[element].empty?
+      #  hash = hash[r[element]] unless r[element].empty?
+      #  hash
+      #}
+
+      #pp plugindata
+
 
       if plugin_instance.empty?
         if type_instance.empty?
