@@ -1,3 +1,3 @@
 #!/usr/bin/env ruby
-require './collectd2graphite'
+require './bin/collectd2graphite'
 run Sinatra::Application
