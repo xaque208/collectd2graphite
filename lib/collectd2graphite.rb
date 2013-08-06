@@ -2,14 +2,24 @@ require 'sinatra'
 require 'json'
 require 'json2graphite'
 require 'yaml'
-#require 'pp'
 
 # A module for converting collectd data into graphite data.
 #
 
-module Collectd2Graphite
-  module_function
+class Collectd2Graphite
 
+  def initialize(rawdata)
+    @rawdata = rawdata
+
+    # Verify we have received an array
+    unless rawdata.is_a? Array
+      raise "received data is not an Array, and should be."
+      exit 127
+    end
+
+  end
+
+  #
   # Accepts an array of hashes formatted by the collectd write_http plugin
   # Returns an array of hashes formatted to your liking, but in a structure
   # that can be used with the jsonn2graphite library
@@ -85,7 +95,6 @@ module Collectd2Graphite
       #}
 
       #pp plugindata
-
 
       if plugin_instance.empty?
         if type_instance.empty?
